@@ -344,7 +344,7 @@ module ActiveShipping
     def build_us_rate_request(packages, origin_zip, destination_zip, options = {})
       xml_builder = Nokogiri::XML::Builder.new do |xml|
         xml.RateV4Request('USERID' => @options[:login]) do
-          xml.RateClientType('025')
+          xml.RateClientType(rate_client_type(options))
           Array(packages).each_with_index do |package, id|
             xml.Package('ID' => id) do
               commercial_type = commercial_type(options)
@@ -376,8 +376,8 @@ module ActiveShipping
                 USPS.package_machinable?(package)
               end
               xml.Machinable(is_machinable.to_s.upcase)
-              xml.RatePriceType('P')
-              xml.RatePaymentType('6')
+              xml.RatePriceType(rate_price_type(options))
+              xml.RatePaymentType(rate_payment_type(options))
             end
           end
         end
@@ -607,7 +607,6 @@ module ActiveShipping
       end
     end
 
-
     def parse_tracking_info(response, node)
       success = !has_error?(node)
       message = response_message(node)
@@ -706,6 +705,18 @@ module ActiveShipping
       elsif options[:commercial_base] == true
         :base
       end
+    end
+
+    def rate_client_type(options)
+      options[:rate_client_type] || nil
+    end
+
+    def rate_price_type(options)
+      options[:rate_price_type] || nil
+    end
+
+    def rate_payment_type(options)
+      options[:rate_payment_type] || nil
     end
   end
 end
